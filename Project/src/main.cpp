@@ -17,8 +17,13 @@
  ******************************************************************************
  */
 
+#include <string>
+
 int main(void)
 {
-    /* Loop forever */
-	for(;;);
+	/* Loop forever */
+	const volatile std::string test = "TOTO";
+
+	for (;;)
+		;
 }
