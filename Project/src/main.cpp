@@ -19,11 +19,84 @@
 
 #include <string>
 
-int main(void)
+#include <stm32f0xx_ll_bus.h>
+#include <stm32f0xx_ll_rcc.h>
+#include <stm32f0xx_ll_utils.h>
+#include <stm32f0xx_ll_system.h>
+
+#include "gpio.h"
+
+/**
+ * @brief System Clock Configuration
+ * @retval None
+ */
+void SystemClock_Config(void)
 {
+	LL_FLASH_SetLatency (LL_FLASH_LATENCY_0);
+	while (LL_FLASH_GetLatency() != LL_FLASH_LATENCY_0)
+	{
+	}
+	LL_RCC_HSE_Enable();
+
+	/* Wait till HSE is ready */
+	while (LL_RCC_HSE_IsReady() != 1)
+	{
+
+	}
+	LL_RCC_SetAHBPrescaler (LL_RCC_SYSCLK_DIV_1);
+	LL_RCC_SetAPB1Prescaler (LL_RCC_APB1_DIV_1);
+	LL_RCC_SetSysClkSource (LL_RCC_SYS_CLKSOURCE_HSE);
+
+	/* Wait till System clock is ready */
+	while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSE)
+	{
+
+	}
+	LL_Init1msTick(16000000);
+	LL_SetSystemCoreClock(16000000);
+	LL_RCC_SetI2CClockSource (LL_RCC_I2C1_CLKSOURCE_SYSCLK);
+}
+
+int main()
+{
+	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+	LL_APB1_GRP2_EnableClock(LL_APB1_GRP2_PERIPH_SYSCFG);
+	LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_PWR);
+
+	/* Configure the system clock */
+	SystemClock_Config();
+
+	/* Initialize all configured peripherals */
+	vanguard::gpio_init();
+
 	/* Loop forever */
 	const volatile std::string test = "TOTO";
 
-	for (;;)
-		;
+	while (true)
+	{
+	}
 }
+
+/**
+ * @brief  This function is executed in case of error occurrence.
+ * @retval None
+ */
+void Error_Handler(void)
+{
+	/* User can add his own implementation to report the HAL error return state */
+}
+
+#ifdef USE_FULL_ASSERT
+/**
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
+void assert_failed(uint8_t * /*file*/, uint32_t /*line*/)
+{
+	/* User can add his own implementation to report the file name and line number,
+	 tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+}
+#endif /* USE_FULL_ASSERT */
